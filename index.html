@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Trabalho 1 DCC121</title>
+  </head>
+  <style>
+    h1{
+      text-align: center;
+    }
+    body{
+      background: rgb(207,226,243);
+    }
+    table {
+      border-collapse: collapse;
+    }
+    td {
+      border: 1px solid black;
+    }
+
+    .tabelas{
+      display: inline-flex;
+      float: left;
+      width: 100%;
+      align-content: center;
+      background: rgba(107,255,118,0.89);
+      flex-direction: row;
+      justify-content: center;
+
+      margin-top: 20px;
+    }
+    .leyout{
+      width: 75%;
+      position: relative;
+      left: 12.5%;
+      display: inline-block;
+      background: rgba(167,255,174,0.89);
+      padding: 10px;
+
+    }
+    .pessoas{
+      display: block;
+      width: 40%;
+      left: 15%;
+      border-top: 0;
+      margin-top: 0;
+      position: relative;
+      margin-left: 0;
+    }
+    .tabela-prod{
+      width: 40%;
+      display: block;
+      margin-top: 0;
+      margin-left: 2%;
+      margin-right: 2%;
+    }
+    .td-item{
+      width: 30%;
+    }
+    .td-img{
+      border: 0;
+      padding-left: 5px;
+      width: 10%;
+    }
+
+    #total{
+      font-size: 20px;
+      font-weight: 300;
+    }
+
+    .leyout > h2{
+      margin-top: 20px;
+      margin-bottom: 0;
+    }
+    body > .leyout > form > div > label{
+      float:left;
+      display: block;
+      width: 25%;
+    }
+    .tabela-prod > h3{
+        margin: 0;
+        border: 0;
+    }
+
+    .pessoas div:hover{
+      text-decoration: underline;
+    }
+    .pessoas img{
+      padding-left: 5px;
+    }
+    .pessoas div{
+        height: 27px;
+    }
+    .tabela-prod table{
+      width: 100%;
+    }
+  </style>
+  <body>
+    <div class="leyout">
+      <h1 style="align-self: center ">Churraski</h1>
+        <p>Adicione pessoas e itens para organizar o seu <strong>churrasco</strong></p>
+        <h2>Adicionar Pessoas para o Churrasco</h2>
+        <form name="pessoa">
+          <label for="nome">Nome:</label>
+          <input type="text" name="nome" placeholder="Nome">
+          <button type="submit" name="novaPessoa">Adicionar</button>
+        </form>
+        <h2>Pessoas:</h2>
+        <div>
+          <ul class="pessoas">
+          </ul>
+        </div>
+        <p id="total">Valor para cada um: <span>0</span></p>
+
+      <h2>Adicionar Novos Itens</h2>
+      <form name="item">
+        <div>
+          <label> Descição do Produto:</label>
+          <input type="text" name="descricao" placeholder="Descrição">
+        </div>
+        <div>
+          <label> Valor do Produto:</label>
+          <input  type="number" name="valor" placeholder="Valor">
+          <button type="button" name="novoFixo">Custo Fixo</button>
+          <button type="button" name="novoPc">Custo Per Capita</button>
+        </div>
+      </form>
+      <div class="tabelas">
+        <div class="tabela-prod">
+          <h3>Produtos Preço Fixo</h3>
+          <table name="tabela-fixa">
+             <tbody>
+             </tbody>
+          </table>
+        </div>
+
+        <div class="tabela-prod" >
+          <h3>Produtos Per Capita</h3>
+          <table name="tabela-pc">
+             <tbody>
+             </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var churrascaria = {
+        participantes : [],
+        itemsFixo: [],
+        itemsPc:[],
+        adicionarParticipante : function(p){
+          this.participantes.push(p);
+          this.callUpdate();
+        },
+        adicionarItemsFixo : function(item){
+          this.itemsFixo.push(item);
+          this.callUpdate();
+        },
+        adicionarItemsPc : function(item){
+          this.itemsPc.push(item);
+          this.callUpdate();
+        },
+        removerParticipante : function(i){
+            this.participantes.splice(i, 1);
+            this.callUpdate();
+        },
+        removerItemFixo : function(i){
+            this.itemsFixo.splice(i, 1);
+            this.callUpdate();
+        },
+        removerItemPc : function(i){
+            this.itemsPc.splice(i, 1);
+            this.callUpdate();
+        },
+        calculaTotalParticipante : function(){
+            var soma = 0;
+            for(var i = 0;i<this.itemsFixo.length;i++){
+                soma += this.itemsFixo[i].valor;
+            }
+            soma = soma / this.participantes.length;
+            for(var i = 0;i<this.itemsPc.length;i++){
+                soma += this.itemsPc[i].valor;
+            }
+            return soma;
+        },
+        callUpdate: null,
+
+      }
+
+      var listaPessoas = document.querySelector(".pessoas > ul");
+      var tabelasProds = document.querySelectorAll(".tabela-prod tbody");
+      var listaPessoas = document.querySelector(".leyout .pessoas");
+      var total = document.querySelector("#total > span");
+
+
+
+      var tabelaItemsFixo = tabelasProds[0];
+      var tabelaItemsPc = tabelasProds[1];
+      var parents = {
+        listaPessoas : listaPessoas.parentNode,
+        itemsFixo : tabelaItemsFixo.parentNode,
+        itemsPc : tabelaItemsPc.parentNode
+      }
+      function desenha(){
+        parents.itemsFixo.removeChild(tabelaItemsFixo);
+        parents.itemsPc.removeChild(tabelaItemsPc);
+        parents.listaPessoas.removeChild(listaPessoas);
+        tabelaItemsFixo = document.createElement("tbody");
+        tabelaItemsPc  = document.createElement("tbody");
+        listaPessoas = document.createElement("ul");
+        listaPessoas.classList.add("pessoas");
+
+        //Desenha as pessoas participantes
+        for(var i=0;i<churrascaria.participantes.length;i++){
+            var li  = document.createElement("li");
+
+            var div = document.createElement("div");
+            div.textContent = churrascaria.participantes[i];
+
+            var img = document.createElement("img");
+            img.setAttribute("src", "x.png");
+            img.setAttribute("width", "10");
+            img.setAttribute("height", "10");
+            img.setAttribute("alt", "Remover pessoa");
+            img.setAttribute("name",String(i));
+            img.addEventListener("click",removerPessoa);
+
+            div.appendChild(img);
+            li.appendChild(div);
+            listaPessoas.appendChild(li);
+
+
+        }
+        parents.listaPessoas.appendChild(listaPessoas);
+
+        //Desenha os intems de preco fixo
+        for(var i=0;i<churrascaria.itemsFixo.length;i++){
+          var tr;
+          var td = [];
+          var tdImg;
+          var img;
+          td[0] = document.createElement("td");
+          td[1] = document.createElement("td");
+          td[0].textContent = churrascaria.itemsFixo[i].descricao;
+          td[1].textContent = churrascaria.itemsFixo[i].valor;
+          tdImg = document.createElement("td");
+          tdImg.classList.add("td-img");
+
+          var img = document.createElement("img");
+          img.setAttribute("src", "x.png");
+          img.setAttribute("width", "10");
+          img.setAttribute("height", "10");
+          img.setAttribute("alt", "Remover item");
+          img.setAttribute("name",String(i));
+          img.addEventListener("click",removerItemFixo);
+          tdImg.appendChild(img);
+
+
+          tr = document.createElement("tr");
+          tr.appendChild(td[0]);
+          tr.appendChild(td[1]);
+          tr.appendChild(tdImg);
+          tabelaItemsFixo.appendChild(tr);
+        }
+        //desenha os items per capita
+        for(var i=0;i<churrascaria.itemsPc.length;i++){
+          var tr;
+          var td = [];
+          var tdImg;
+          var img;
+          td[0] = document.createElement("td");
+          td[1] = document.createElement("td");
+          td[0].textContent = churrascaria.itemsPc[i].descricao;
+          td[1].textContent = churrascaria.itemsPc[i].valor;
+          tdImg = document.createElement("td");
+          tdImg.classList.add("td-img");
+
+          var img = document.createElement("img");
+          img.setAttribute("src", "x.png");
+          img.setAttribute("width", "10");
+          img.setAttribute("height", "10");
+          img.setAttribute("alt", "Remover item");
+          img.setAttribute("name",String(i));
+          img.addEventListener("click",removerItemPc);
+          tdImg.appendChild(img);
+
+
+          tr = document.createElement("tr");
+          tr.appendChild(td[0]);
+          tr.appendChild(td[1]);
+          tr.appendChild(tdImg);
+          tabelaItemsPc.appendChild(tr);
+        }
+        parents.itemsFixo.appendChild(tabelaItemsFixo);
+        parents.itemsPc.appendChild(tabelaItemsPc);
+        total.textContent = churrascaria.calculaTotalParticipante();
+
+
+      }
+
+      function removerItemFixo(){
+          console.log("Remover Fixo "+ this.name);
+          churrascaria.removerItemFixo(Number(this.name));
+      }
+      function removerItemPc(){
+          console.log("Remover Per Capita "+ this.name);
+          churrascaria.removerItemPc(Number(this.name));
+      }
+      function removerPessoa(){
+          console.log("Remover Pessoa"+ this.name);
+          churrascaria.removerParticipante(Number(this.name));
+      }
+      document.pessoa.addEventListener("submit",adicionarPessoa);
+      function adicionarPessoa(e){
+        e.preventDefault();
+        churrascaria.adicionarParticipante(document.pessoa.nome.value);
+        console.dir("Nova pessoa adicionada: "+document.pessoa.nome.value);
+        document.pessoa.nome.value = "";
+      }
+      function adicionarItemPrecoFixo(e){
+        e.preventDefault();
+        churrascaria.adicionarItemsFixo({descricao: document.item.descricao.value,valor:Number(document.item.valor.value)});
+        document.item.descricao.value="";
+        document.item.valor.value = "";
+
+      }
+      function adicionarItemPrecoPerCapita(e){
+          e.preventDefault();
+          churrascaria.adicionarItemsPc({descricao: document.item.descricao.value,valor:Number(document.item.valor.value)});
+          document.item.descricao.value="";
+          document.item.valor.value = "";
+      }
+      document.item.novoFixo.addEventListener("click",adicionarItemPrecoFixo);
+      document.item.novoPc.addEventListener("click",adicionarItemPrecoPerCapita);
+      churrascaria.callUpdate = desenha;
+    </script>
+
+  </body>
+</html>
