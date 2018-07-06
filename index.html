@@ -62,6 +62,14 @@
       padding-left: 5px;
       width: 10%;
     }
+    .div-avisa{
+      position: fixed;
+      width: 25%;
+      top : 45%;
+      left: 32.5%;
+      height: 100px;
+      background: rgba(150, 150, 150, 0.8);
+    }
 
     #total{
       font-size: 20px;
@@ -93,6 +101,16 @@
     }
     .tabela-prod table{
       width: 100%;
+    }
+    .div-avisa > img{
+      float: right;
+    }
+    .div-avisa > p{
+      position: absolute;
+      text-align: center;
+      width: 100%;
+      top :26.5px;
+      color: red;
     }
   </style>
   <body>
@@ -192,24 +210,13 @@
       var tabelasProds = document.querySelectorAll(".tabela-prod tbody");
       var listaPessoas = document.querySelector(".leyout .pessoas");
       var total = document.querySelector("#total > span");
-
-
-
       var tabelaItemsFixo = tabelasProds[0];
       var tabelaItemsPc = tabelasProds[1];
-      var parents = {
-        listaPessoas : listaPessoas.parentNode,
-        itemsFixo : tabelaItemsFixo.parentNode,
-        itemsPc : tabelaItemsPc.parentNode
-      }
+
       function desenha(){
-        parents.itemsFixo.removeChild(tabelaItemsFixo);
-        parents.itemsPc.removeChild(tabelaItemsPc);
-        parents.listaPessoas.removeChild(listaPessoas);
-        tabelaItemsFixo = document.createElement("tbody");
-        tabelaItemsPc  = document.createElement("tbody");
-        listaPessoas = document.createElement("ul");
-        listaPessoas.classList.add("pessoas");
+        tabelaItemsFixo.innerHTML="";
+        tabelaItemsPc.innerHTML="";
+        listaPessoas.innerHTML="";
 
         //Desenha as pessoas participantes
         for(var i=0;i<churrascaria.participantes.length;i++){
@@ -222,9 +229,12 @@
             img.setAttribute("src", "x.png");
             img.setAttribute("width", "10");
             img.setAttribute("height", "10");
-            img.setAttribute("alt", "Remover pessoa");
-            img.setAttribute("name",String(i));
-            img.addEventListener("click",removerPessoa);
+            img.setAttribute("alt", "Remover pessoa "+i+" da lista");
+            img.addEventListener("click",(function(x){
+              return function(){
+                churrascaria.removerParticipante(x);
+              }
+            })(i));
 
             div.appendChild(img);
             li.appendChild(div);
@@ -232,7 +242,6 @@
 
 
         }
-        parents.listaPessoas.appendChild(listaPessoas);
 
         //Desenha os intems de preco fixo
         for(var i=0;i<churrascaria.itemsFixo.length;i++){
@@ -251,9 +260,12 @@
           img.setAttribute("src", "x.png");
           img.setAttribute("width", "10");
           img.setAttribute("height", "10");
-          img.setAttribute("alt", "Remover item");
-          img.setAttribute("name",String(i));
-          img.addEventListener("click",removerItemFixo);
+          img.setAttribute("alt", "Remover item"+i +" da lista");
+          img.addEventListener("click",(function(x){
+            return function(){
+              churrascaria.removerItemFixo(x);
+            }
+          })(i));
           tdImg.appendChild(img);
 
 
@@ -280,9 +292,12 @@
           img.setAttribute("src", "x.png");
           img.setAttribute("width", "10");
           img.setAttribute("height", "10");
-          img.setAttribute("alt", "Remover item");
-          img.setAttribute("name",String(i));
-          img.addEventListener("click",removerItemPc);
+          img.setAttribute("alt", "Remover item "+i +" da lista");
+          img.addEventListener("click",(function(x){
+            return function(){
+              churrascaria.removerItemPc(x);
+            }
+          })(i));
           tdImg.appendChild(img);
 
 
@@ -292,25 +307,9 @@
           tr.appendChild(tdImg);
           tabelaItemsPc.appendChild(tr);
         }
-        parents.itemsFixo.appendChild(tabelaItemsFixo);
-        parents.itemsPc.appendChild(tabelaItemsPc);
         total.textContent = churrascaria.calculaTotalParticipante();
-
-
       }
 
-      function removerItemFixo(){
-          console.log("Remover Fixo "+ this.name);
-          churrascaria.removerItemFixo(Number(this.name));
-      }
-      function removerItemPc(){
-          console.log("Remover Per Capita "+ this.name);
-          churrascaria.removerItemPc(Number(this.name));
-      }
-      function removerPessoa(){
-          console.log("Remover Pessoa"+ this.name);
-          churrascaria.removerParticipante(Number(this.name));
-      }
       document.pessoa.addEventListener("submit",adicionarPessoa);
       function adicionarPessoa(e){
         e.preventDefault();
@@ -318,18 +317,46 @@
         console.dir("Nova pessoa adicionada: "+document.pessoa.nome.value);
         document.pessoa.nome.value = "";
       }
-      function adicionarItemPrecoFixo(e){
-        e.preventDefault();
-        churrascaria.adicionarItemsFixo({descricao: document.item.descricao.value,valor:Number(document.item.valor.value)});
-        document.item.descricao.value="";
-        document.item.valor.value = "";
-
-      }
-      function adicionarItemPrecoPerCapita(e){
-          e.preventDefault();
-          churrascaria.adicionarItemsPc({descricao: document.item.descricao.value,valor:Number(document.item.valor.value)});
+      function adicionarItemPrecoFixo(){
+        var valor = Number(document.item.valor.value);
+        if(valor>=0){
+          churrascaria.adicionarItemsFixo({descricao: document.item.descricao.value,valor: valor});
           document.item.descricao.value="";
           document.item.valor.value = "";
+        }else{
+           avisaUser("Valor do item "+document.item.descricao.value +" é Inválido");
+        }
+      }
+      function adicionarItemPrecoPerCapita(){
+          var valor = Number(document.item.valor.value);
+          if(valor>=0){
+            churrascaria.adicionarItemsPc({descricao: document.item.descricao.value,valor:valor});
+            document.item.descricao.value="";
+            document.item.valor.value = "";
+          }else{
+            avisaUser("Valor do item "+document.item.descricao.value +" é Inválido");
+          }
+      }
+
+      function avisaUser(texto){
+        var leyout =   document.querySelector(".leyout");
+        var div = document.createElement("div");
+        div.classList.add("div-avisa");
+        var p =  document.createElement("p");
+        p.textContent = texto;
+        var img = document.createElement("img");
+        img.setAttribute("src", "x.png");
+        img.setAttribute("width", "10");
+        img.setAttribute("height", "10");
+        img.setAttribute("alt", "Fechar aviso");
+        img.addEventListener("click",(function(x){
+          return function(){
+            leyout.removeChild(x);
+          }
+        })(div));
+        div.appendChild(img);
+        div.appendChild(p);
+        leyout.appendChild(div);
       }
       document.item.novoFixo.addEventListener("click",adicionarItemPrecoFixo);
       document.item.novoPc.addEventListener("click",adicionarItemPrecoPerCapita);
